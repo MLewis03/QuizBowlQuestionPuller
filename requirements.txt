@@ -1,0 +1,4 @@
+pandas
+language-tool-python
+python-docx
+reportlab

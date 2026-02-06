@@ -45,6 +45,10 @@ def export_rounds_to_word(text_output, division, filename="QuizRounds.docx"):
             run.font.size = Pt(16)
             continue
 
+        if stripped == "===PAGEBREAK===":
+            doc.add_page_break()
+            continue
+
         p = doc.add_paragraph()
         run = p.add_run(stripped)
         run.font.size = Pt(12)

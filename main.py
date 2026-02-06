@@ -1,33 +1,40 @@
 from question_loader import load_and_select_questions
-from round_formatter import build_rounds_output
+from round_formatter import build_rounds_output, build_appendix_output
 from grammar_checker import check_grammar
+from export_grammar_pdf import export_grammar_pdf
 from export_to_word import export_rounds_to_word
 from export_to_pdf import export_rounds_to_pdf
+import random
+import numpy as np
 
 # -----------------------------
-DIVISION = "Junior"        # "Junior" or "Senior"
+DIVISION = "Junior"
 YEAR = 2026
 SEEDING_ROUNDS = 5
-ELIMINATION_ROUNDS = 2     # 1=Finals; 2=Semis+Finals; 3=Quarters+Semis+Finals
+ELIMINATION_ROUNDS = 2
 QUESTIONS_PER_ROUND = 24
-CSV_PATH = "data/Questions_2025_Junior.csv"
+CSV_PATH = "data/Catholic Quizbowl of North Carolina Questions - Junior.csv"
+OUTPUT_TYPE = "pdf"
+SEED = 20260206
+
+random.seed(SEED)
+np.random.seed(SEED)
 # -----------------------------
 
 total_rounds = SEEDING_ROUNDS + ELIMINATION_ROUNDS
 total_needed = total_rounds * QUESTIONS_PER_ROUND
 
-df = load_and_select_questions(
+df, full_df = load_and_select_questions(
     csv_path=CSV_PATH,
     target_year=YEAR,
-    total_needed=total_needed
+    total_needed=total_needed,
+    seed=SEED
 )
 
 issues = check_grammar(df)
 if issues:
-    print("Grammar/Spelling Issues Found:")
-    for issue in issues:
-        print(issue)
-    print()
+    print("Grammar/Spelling Issues Found")
+    export_grammar_pdf(issues, filename="GrammarReport.pdf")
 
 output = build_rounds_output(
     df=df,
@@ -37,10 +44,21 @@ output = build_rounds_output(
     questions_per_round=QUESTIONS_PER_ROUND
 )
 
-with open("output.txt", "w", encoding="utf-8") as f:
-    f.write(output)
+# -----------------------------
+# APPENDIX OF 10 EXTRA QUESTIONS
+# -----------------------------
+remaining_df = full_df.drop(df.index)
+appendix_df = remaining_df.sample(10, random_state=SEED)
+appendix_text = build_appendix_output(appendix_df)
+output = output + "\n\n===PAGEBREAK===\n\n" + appendix_text
 
-export_rounds_to_word(output, division=DIVISION, filename="QuizRounds.docx")
-export_rounds_to_pdf(output, division=DIVISION, filename="QuizRounds.pdf")
+# -----------------------------
+# OUTPUT FORMATS
+# -----------------------------
+if OUTPUT_TYPE in ("word", "both"):
+    export_rounds_to_word(output, division=DIVISION, filename="QuizRounds.docx")
 
-print("Generated: output.txt, QuizRounds.docx, QuizRounds.pdf")
+if OUTPUT_TYPE in ("pdf", "both"):
+    export_rounds_to_pdf(output, division=DIVISION, filename="QuizRounds.pdf")
+
+print("Generated Output Files")

@@ -18,7 +18,7 @@ def export_rounds_to_pdf(text_output, division, filename="QuizRounds.pdf"):
     # ---------------------------------------------------------
     # TITLE PAGE (simple, clean)
     # ---------------------------------------------------------
-    story.append(Paragraph("Catholic Quiz Bowl of North Carolina", styles["Title"]))
+    story.append(Paragraph("Catholic Quiz Bowl of the Carolinas Championship", styles["Title"]))
     story.append(Spacer(1, 36))
     story.append(Paragraph(f"{division} Questions", styles["Title"]))
     story.append(Spacer(1, 36))
